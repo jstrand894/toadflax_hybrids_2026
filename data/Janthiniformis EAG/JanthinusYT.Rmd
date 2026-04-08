@@ -1,0 +1,130 @@
+---
+title: "Janthinus YT"
+author: "Jackson Strand"
+date: "`r Sys.Date()`"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r library}
+library(tidyverse)
+library(readxl)
+library(baseline)
+library(plotly)
+library(fuzzyjoin)
+library(ggforce)
+library(zoo)
+library(grid)
+library(cowplot)
+```
+
+```{r}
+janthinus_yt <- read_excel("Janthinus/YTa1.xlsx") %>%
+  rename(EAD = 1, FID = 2) %>%
+  dplyr::select(1:2) %>%
+  mutate(rownum = row_number()) %>%
+  # left_join(yt_test, by = "rownum") %>%
+  # mutate(FID = coalesce(FID.y, FID.x)) %>%
+  # select(-FID.x, -FID.y) %>%
+  filter(rownum > 2500,
+         rownum < 6000) %>%
+  mutate(EAD = EAD * 0.35)
+
+janthinus_yt %>%
+  mutate(trend = rollapply(FID, width = 10, FUN = mean, fill = NA, align = 'center')) %>%
+  mutate(detrended_FID = FID - trend) %>%
+  mutate(normalized_FID = (detrended_FID - min(detrended_FID, na.rm = TRUE)) / 
+                             (max(detrended_FID, na.rm = TRUE) - min(detrended_FID, na.rm = TRUE))) %>%
+  ggplot(aes(x = rownum)) +
+  geom_line(aes(y = FID)) +
+  geom_line(aes(y = normalized_FID))
+
+```
+
+
+
+```{r}
+spike_data <- tribble(
+  ~name,        ~start,  ~size,
+  "sixmethyl",    4009,   0.35,  
+  "z3hex",        4259,   1.07,  
+  "limonene",     4516,   0.69,  
+  "tbocimene",    4686,   0.29,  
+  "ocimene",      4749,   1.19,  
+  "linalool",     5479,   0.55,  
+  "caryophyllene",7492,   0.37  
+)
+
+spike_values <- c(0.183, 0.267, 0.352, 0.470, 0.588, 0.708, 0.810, 0.865, 0.822, 0.750, 0.678, 0.618)
+
+combined_spike_table <- spike_data %>%
+  mutate(
+    spike_value = map2(size, list(spike_values), ~ .y * .x),
+    rownum = map2(start, spike_value, ~ .x:(.x + length(.y) - 1)),
+    spike_table = pmap(list(rownum, spike_value, name), ~ tibble(rownum = ..1, spike_value = ..2, name = ..3))
+  ) %>%
+  select(spike_table) %>%
+  unnest(cols = spike_table) %>%
+  rename("EAD" = "spike_value") %>%
+  dplyr::select(-3) 
+
+janthinus_yt_spikes <-
+janthinus_yt %>%
+  dplyr::select(-FID) %>%
+  filter(!rownum %in% combined_spike_table$rownum) %>%
+  bind_rows(combined_spike_table) %>%
+  left_join(janthinus_yt %>%
+              select(-EAD), by = "rownum") %>%
+  filter(rownum < 6000,
+         rownum > 3750)
+
+
+janthinus_yt_plot <-
+ggplot() + 
+  geom_line(data = janthinus_yt_spikes,
+            aes(x = rownum, y = -EAD*0.25)) +
+  geom_line(data = janthinus_yt_spikes,
+            aes(x = rownum, y = FID))
+
+janthinus_yt_plot +
+  theme(axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank(),
+        panel.background = element_blank(),
+        plot.background = element_blank(),
+        panel.grid = element_blank()) +
+  labs(x = NULL)
+
+ggplotly(janthinus_yt_plot)
+
+
+```
+
+
+
+
+
+
+```{r test yt}
+# good looking, but the time is different, so won't really work.    
+yt_test <-    
+read_excel("pooled_gcms/yt test.xlsx") %>%
+  distinct() %>%
+  mutate(rownum = row_number()+1156) %>%
+  rename(EAD = 1, FID = 2) %>%
+  select(FID, rownum)
+
+ggplotly(
+yt_test %>%
+  filter(rownum > 3750,
+         rownum < 6000) %>%
+  ggplot() +
+  geom_line(aes(x = rownum, y = FID))
+)
+  
+4009- 2853
+```

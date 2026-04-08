@@ -1,0 +1,94 @@
+---
+title: "Janthiniformis YT"
+author: "Jackson Strand"
+date: "`r Sys.Date()`"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r library}
+library(tidyverse)
+library(readxl)
+library(baseline)
+library(plotly)
+library(fuzzyjoin)
+library(ggforce)
+library(zoo)
+library(grid)
+library(cowplot)
+```
+
+```{r}
+janthiniformis_yt <- read_excel("Janthiniformis/ytJi1.xlsx") %>%
+  rename(EAD = 1, FID = 2) %>%
+  dplyr::select(1:2) %>%
+  mutate(rownum = row_number()) %>%
+  filter(rownum > 3300,
+         rownum < 8000) %>%
+  mutate(EAD = EAD * 0.45)
+
+ggplotly(
+  yt_janthiniformis %>%
+  ggplot() +
+    geom_line(aes(x = rownum, y = EAD*0.2)) +
+    geom_line(aes(x = rownum, y = FID))
+)
+```
+
+
+
+```{r}
+spike_data <- tribble(
+  ~name,        ~start, ~size,
+  "ocimene",     5574,   1,  
+  "limonene",    5431,   0.45, 
+  "tbocimene",   5491,   0.21, 
+  "sixmethyl",   4953,   0.75, 
+  "z3hex",       5158,   1.2,
+  "linalool",    6098,   0.25,
+  "caryophyllene",7272,  0.25
+)
+
+spike_data$size*3
+
+spike_values <- -c(0.183, 0.381, 0.579, 0.78, 0.894, 0.777, 0.618)
+
+combined_spike_table <- spike_data %>%
+  mutate(
+    spike_value = map2(size, list(spike_values), ~ .y * .x),
+    rownum = map2(start, spike_value, ~ .x:(.x + length(.y) - 1)),
+    spike_table = pmap(list(rownum, spike_value, name), ~ tibble(rownum = ..1, spike_value = ..2, name = ..3))
+  ) %>%
+  select(spike_table) %>%
+  unnest(cols = spike_table) %>%
+  rename("EAD" = "spike_value") %>%
+  dplyr::select(-3) 
+
+janthiniformis_yt_spikes <-
+janthiniformis_yt %>%
+  dplyr::select(-FID) %>%
+  filter(!rownum %in% combined_spike_table$rownum) %>%
+  bind_rows(combined_spike_table)
+
+janthiniformis_yt_plot <-
+ggplot() + 
+  geom_line(data = janthiniformis_yt_spikes,
+            aes(x = rownum, y = EAD*0.25)) +
+  geom_line(data = janthiniformis_yt,
+            aes(x = rownum, y = FID))
+
+janthiniformis_yt_plot +
+  theme(axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank(),
+        panel.background = element_blank(),
+        plot.background = element_blank(),
+        panel.grid = element_blank()) +
+  labs(x = NULL)
+ggplotly(janthiniformis_yt_plot)
+
+```
