@@ -26,7 +26,7 @@ This project integrates three experimental approaches across six toadflax germpl
 | DT | Dalmatian toadflax (*L. dalmatica*) — natal host of *M. janthinus* |
 | Y6D6 | Synthetic F1 hybrid (YT × DT) |
 | D6Y6 | Synthetic F1 hybrid (DT × YT) |
-| HBR | Wild hybrid population (Heart Butte Road) |
+| HBR | Wild hybrid population (Boulder River) |
 | RAD | Wild hybrid population (Radersburg) |
 
 ---
