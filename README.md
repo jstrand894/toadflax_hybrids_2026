@@ -22,8 +22,8 @@ This project integrates three experimental approaches across six toadflax germpl
 
 | Code | Description |
 |------|-------------|
-| YT | Yellow toadflax (*L. vulgaris*) — natal host of *M. janthiniformis* |
-| DT | Dalmatian toadflax (*L. dalmatica*) — natal host of *M. janthinus* |
+| YT | Yellow toadflax (*L. vulgaris*) — natal host of *M. janthinus* |
+| DT | Dalmatian toadflax (*L. dalmatica*) — natal host of *M. janthiniformis* |
 | Y6D6 | Synthetic F1 hybrid (YT × DT) |
 | D6Y6 | Synthetic F1 hybrid (DT × YT) |
 | HBR | Wild hybrid population (Boulder River) |
