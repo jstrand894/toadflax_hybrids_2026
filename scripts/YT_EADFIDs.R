@@ -13,8 +13,8 @@ source("scripts/helpers_eag_fid.R")
 #       encodes downward spike direction — ead_flip = FALSE preserves this.
 
 yt_janthiniformis <- load_eag_fid(
-  eag_path = "../data/EAG/yt_janthiniformis_with_spikes.xlsx",
-  fid_path = "../data/FID/YT_Janthiniformis.xlsx"
+  eag_path = "data/EAG/yt_janthiniformis_with_spikes.xlsx",
+  fid_path = "data/FID/YT_Janthiniformis.xlsx"
 )
 
 p_yt_janthiniformis <- plot_eag_fid(

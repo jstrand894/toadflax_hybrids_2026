@@ -66,7 +66,6 @@ depolarizations %>%
   geom_bar(aes(x = compound, y = mean, fill = plant),
            stat = "identity",
            color = "black", linewidth = 0.2,
-           alpha = 0.75,
            position = position_dodge(width = 0.9)) +
   geom_errorbar(aes(x = compound, ymin = mean - se, ymax = mean + se, group = plant),
                 position = position_dodge(width = 0.9),
@@ -88,7 +87,7 @@ depolarizations %>%
   scale_fill_manual(values = plant_colors, labels = plant_labels)
 
 depolarizations_plot
- 
+
 ggsave("figures/fig4_depolarizations.pdf", depolarizations_plot,
        width = 7, height = 4, device = cairo_pdf)
 
