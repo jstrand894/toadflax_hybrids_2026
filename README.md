@@ -8,7 +8,7 @@ J. R. Strand, S. E. Sing, E. J. Friesenhahn, M. J. Hofland, D. K. Weaver
 
 ## Overview
 
-Yellow toadflax (*Linaria vulgaris*) and Dalmatian toadflax (*L. dalmatica*) are highly invasive plants across western North America. Two cryptic weevil species — *Mecinus janthinus* (specialist on Dalmatian toadflax) and *M. janthiniformis* (specialist on yellow toadflax) — have been introduced as biological control agents. Natural hybridization between the two toadflax species produces plants with volatile profiles that differ from either parent, potentially placing hybrids outside the host-recognition window of both weevils and creating a refuge from biocontrol pressure.
+Yellow toadflax (*Linaria vulgaris*) and Dalmatian toadflax (*L. dalmatica*) are highly invasive plants across western North America. Two cryptic weevil species — *Mecinus janthinus* (specialist on yellow toadflax) and *M. janthiniformis* (specialist on Dalmatian toadflax) — have been introduced as biological control agents. Natural hybridization between the two toadflax species produces plants with volatile profiles that differ from either parent, potentially placing hybrids outside the host-recognition window of both weevils and creating a refuge from biocontrol pressure.
 
 This project integrates three experimental approaches across six toadflax germplasm types (two parental species, two synthetic F1 hybrids, two wild hybrid populations):
 
@@ -26,7 +26,7 @@ This project integrates three experimental approaches across six toadflax germpl
 | DT | Dalmatian toadflax (*L. dalmatica*) — natal host of *M. janthiniformis* |
 | Y6D6 | Synthetic F1 hybrid (YT × DT) |
 | D6Y6 | Synthetic F1 hybrid (DT × YT) |
-| HBR | Wild hybrid population (Heart Butte Road) |
+| HBR | Wild hybrid population (Boulder River) |
 | RAD | Wild hybrid population (Radersburg) |
 
 ---
