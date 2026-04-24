@@ -98,7 +98,7 @@ mean_volatiles <-
 
 mean_volatiles
 
-ggsave("figures/fig2_mean-volatiles.pdf", mean_volatiles,
+ggsave("figures/fig1_mean-volatiles.pdf", mean_volatiles,
        width = 7, height = 4, device = cairo_pdf)
 
 

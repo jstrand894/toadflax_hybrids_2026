@@ -14,6 +14,12 @@ compound_order <- depolarizations %>%
   arrange(grand_mean) %>%
   pull(compound)
 
+depolarizations %>% 
+  filter(species == "janthiniformis",
+         plant == "dt") %>% 
+  select(species, plant, compound, sample_mean, sample_se)
+
+
 facet_labels <- c(
   "janthinus"      = "italic('M. janthinus')",
   "janthiniformis" = "italic('M. janthiniformis')"

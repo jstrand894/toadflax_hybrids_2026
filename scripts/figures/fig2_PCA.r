@@ -159,5 +159,5 @@ p3 <- ggplot(scores_p3, aes(x = PC1, y = PC2, color = Plant, fill = Plant)) +
 fig1 <- p1 + p2 + p3 + plot_layout(nrow = 1)
 fig1
 
-ggsave("figures/fig1_PCA.pdf", fig1,
+ggsave("figures/fig2_PCA.pdf", fig1,
        width = 10, height = 4, device = cairo_pdf)
