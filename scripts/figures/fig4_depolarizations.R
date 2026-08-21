@@ -4,7 +4,14 @@ library(ggtext)
 
 
 depolarizations <-
-read_excel("data/EAG/depolarizations.xlsx", sheet = "compound response")
+read_excel("data/EAG/depolarizations.xlsx", sheet = "compound response") 
+
+depolarizations
+
+depolarizations %>%
+  mutate(sample_mean_scaled = sample_mean / 
+           (max(sample_mean, na.rm = TRUE) * 10)) %>% 
+  select(species, plant, compound, sample_mean, sample_mean_scaled)
 
 compound_order <- depolarizations %>%
   dplyr::select(species, plant, compound, run1:run5) %>%

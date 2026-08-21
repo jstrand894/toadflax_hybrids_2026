@@ -1,11 +1,3 @@
----
-title: "Janthiniformis DT"
-author: "Jackson Strand"
-date: "`r Sys.Date()`"
-output: html_document
-editor_options: 
-  chunk_output_type: console
----
 
 
 ```{r library}
@@ -21,7 +13,7 @@ library(cowplot)
 ```
 
 ```{r}
-janthiniformis_dt <- read_excel("Janthiniformis/DT EAGFID 2.10.xlsx") %>%
+janthiniformis_dt <- read_excel("data/Janthiniformis EAG/Janthiniformis/DT EAGFID 2.10.xlsx") %>%
   rename(EAD = 1, FID = 2) %>%
   dplyr::select(1:2) %>%
   mutate(rownum = row_number()) %>%

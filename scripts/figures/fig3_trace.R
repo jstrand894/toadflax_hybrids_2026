@@ -109,10 +109,15 @@ janthiniformis_dt_plot <-
     name   = "Retention time (min)"
   ) +
   scale_y_continuous(
-    breaks = c(-0.25, 0),
-    labels = c("0.1", "0"),
-    name   = "Response (mV)                           "
-  )
+    breaks = seq(-0.25, 0, by = 0.0625),
+    labels = function(x) ifelse(x %in% c(-0.25, 0), ifelse(x == -0.25, "4", "0"), "")
+  ) +
+  labs(y = "Response (mV)                           ") 
+  # scale_y_continuous(
+  #     breaks = c(-0.25, 0),
+  #     labels = c("0.1", "0"),
+  #     name   = "Response (mV)                           "
+  #   )
 
 janthiniformis_dt_plot
 

@@ -1,0 +1,151 @@
+---
+title: "Freq vs Bayes - Toadflax Hybrids"
+author: "Jackson Strand"
+date: "`r Sys.Date()`"
+output: pdf_document
+urlcolor: blue
+---
+# Rationale for adopting a Bayesian estimation framework
+
+This study has three kinds of data. The chemical makeup of the plant scents, the choices weevils made in the Y-tube tests, and the electrical responses recorded from weevil antennae. We originally analyzed all three with frequentist methods and later switched all three to Bayesian methods. Here is what each approach would have us do and what each one tells us.
+
+## What the frequentist approach did
+
+For the scent chemistry, we used a test called PERMANOVA. PERMANOVA takes the full chemical profile of each plant and asks whether the average profiles of two germplasm groups are far enough apart that the gap is unlikely to be due to chance. It returns a p-value, which is roughly the probability of seeing a gap this large if the groups were really identical. We then ran a second, separate test for dispersion, meaning how spread out the samples within a group are, because PERMANOVA alone can be fooled by spread.
+
+For the Y-tube choices, we used a one-sided exact binomial test. This asks whether the share of weevils choosing the plant arm is convincingly above the 50 percent you would expect from random wandering, and again it returns a p-value.
+
+For the antennal responses, we used a mixed model that asks whether the two weevil species reacted differently to each compound, and it returns p-values for those comparisons.
+
+The common thread is that all three are yes or no tests. A small p-value lets us say a difference probably exists. The catch is that this style of test cannot tell us how big a difference is in a way that carries its uncertainty, and it can never show that two groups are actually alike. Failing to find a difference is not the same as showing there is none, and several of our central questions are exactly about similarity.
+
+## What the Bayesian approach does
+
+Instead of testing yes or no, the Bayesian approach estimates the actual quantity we care about and reports a range of plausible values for it along with how much confidence to place in that range. This range is called a credible interval, and unlike a p-value it has the plain meaning people expect, which is that there is a 95 percent probability the true value sits inside it.
+
+For the scent chemistry, this lets us estimate how far apart two groups really are, with uncertainty attached, and handle the spread of a group inside the same model rather than in a disconnected second test. It also lets us answer a similarity question head on, for example the probability that two hybrid groups are closer to each other than the two parent lines are. For the Y-tube choices, it gives us the estimated preference for each plant together with the probability that weevils truly favor it over chance. For the antennal responses, it gives the estimated difference between the two species for each compound, again with a clear probability behind it.
+
+We fit the Bayesian models in brms (v2.22.0; Burkner 2017, 2018) with a CmdStan backend (v2.39.0; Stan Development Team 2026), except for the Y-tube analysis, which has a simple enough structure to solve directly. The sections below explain why this switch helped for each of the three data streams. 
+
+## Frequentist vs Bayesian statistics
+
+Frequentist statistics (the traditional approach), mostly answers yes or no questions. It asks whether two groups differ and hands back a p-value, which is roughly the chance of seeing data like ours if there were really no difference. A small p-value lets us say a difference probably exists, but it tells us little about how big that difference is, and it can never tell us that two groups are actually alike. The best it can do is fail to find a difference, which is *not* the same thing as showing there is none.
+
+Bayesian statistics allows us to be more direct. Instead of testing a yes or no, it estimates the actual quantity we care about and reports a range of plausible values along with how confident we should be in each. So rather than saying a difference is or is not significant, it lets us say things like there is a 95 percent probability the true value falls in this range, or there is a 97 percent probability these weevils prefer this plant. For this study, where the real questions are how different the hybrids are and how similar certain groups are to each other, that second style of answer fits what we actually want to know. The sections below explain why I made that switch for each part of the analysis.
+
+For a non-technical introduction to the difference between these two approaches, see Ben Lambert's *A Student's Guide to Bayesian Statistics* (SAGE, 2018). Free PDF found [here](https://sites.math.rutgers.edu/~zeilberg/EM20/Lambert.pdf). 
+
+## Shared motivation
+
+The biological questions in this study are questions about magnitude and similarity rather than questions about whether a difference exists at all. We want to know how far wild hybrid profiles are displaced from the parental axis, whether the two wild ecotypes converge on one another, and whether reciprocal F1 hybrids converge on one another. Null hypothesis significance testing answers a different question. A non-significant PERMANOVA or a non-significant contrast does not provide evidence that two groups are alike, because failure to reject a null is not support for it. Recasting every analysis as estimation lets us report the quantity of interest directly, as a posterior median with a 95 percent credible interval, and lets us make explicit probability statements such as the posterior probability that the hybrid pair separation is smaller than the parental separation. The three analyses now share one inferential logic and one way of expressing evidence, which removes the patchwork of permutation p-values, exact-test p-values, and asymptotic p-values that the manuscript previously had to reconcile.
+
+A second shared gain is uncertainty propagation. Centroids, pairwise distances, dispersion summaries, and the ordination figure are all derived from the same fitted posterior, so the dots plotted in Figure 2 are the same model-based centroids reported in the text, carried with their uncertainty rather than collapsed to raw sample means.
+
+## Volatile composition
+
+The frequentist pipeline separated two things that are really one question. PERMANOVA tested whether germplasm centroids differ, and a separate `betadisper` test asked whether within-group spread differs. This is a known confound. A significant PERMANOVA result can be driven by unequal dispersion rather than by a shift in location, and in our data Y6 carried greater dispersion than several other groups, which makes any pairwise PERMANOVA involving Y6 hard to interpret. Pairwise comparison across all 15 germplasm pairs also forced a Bonferroni correction, which trades power for family-wise error control and reports nothing about how large each separation actually is.
+
+```r
+# Prior frequentist VOC analysis (from volatile_ordination.R)
+
+# Location tested by PERMANOVA, dispersion tested separately
+adonis2(mat_sub ~ Plant,
+        data         = meta_sub,
+        method       = "euclidean",                 # Aitchison on CLR
+        permutations = how(blocks = meta_sub$Day, nperm = 999))
+
+# 15 pairwise PERMANOVAs, Bonferroni corrected
+pairwise_results <- map_dfr(pairs, function(p) {
+  idx <- meta_sub$Plant %in% p
+  res <- adonis2(mat_sub[idx, ] ~ Plant, data = meta_sub[idx, ],
+                 method = "euclidean", permutations = 999)
+  tibble(group1 = p[1], group2 = p[2], p_val = res$`Pr(>F)`[1])
+}) %>% mutate(p_adj = p.adjust(p_val, method = "bonferroni"))
+
+# Dispersion tested in a second, disconnected framework
+bd <- betadisper(dist(mat_sub, "euclidean"), meta_sub$Plant)
+permutest(bd, permutations = 999)
+```
+
+The Bayesian replacement fits one multivariate distributional model to the CLR-transformed compounds. Location is the mean surface and dispersion is a distributional component on the residual scale, so the two are estimated jointly inside one model rather than tested in two frameworks where one confounds the other. Day enters as a random intercept, which handles the partial confounding of day and germplasm directly and removes the need for the separate blocked and co-sampled-subset PERMANOVAs that the frequentist version required as workarounds. Pairwise Aitchison distances come out of the posterior with credible intervals, and the convergence question becomes a posterior probability rather than the absence of a rejection.
+
+```r
+# Bayesian VOC analysis (from bayesian_vocs.R)
+
+# One model: location (Plant) and dispersion (sigma ~ Plant) together,
+# day as a random intercept for the confounded sampling design
+forms <- lapply(cmpd_names, function(v)
+  bf(as.formula(paste0("`", v, "` ~ Plant + (1|Day)")), sigma ~ Plant))
+mv_formula <- Reduce(`+`, forms) + set_rescor(FALSE)
+
+fit <- brm(mv_formula, data = model_df, family = gaussian(),
+           prior = priors, chains = 4, iter = 4000, warmup = 1000,
+           control = list(adapt_delta = 0.95, max_treedepth = 12),
+           seed = 42, backend = "cmdstanr")
+
+# Pairwise Aitchison distances with 95% CrI, straight from the posterior
+epred <- posterior_epred(fit, newdata = nd, re_formula = NA)   # [draws, 6, 20]
+d <- sqrt(rowSums((epred[, i, ] - epred[, j, ])^2))            # per-draw distance
+
+# Convergence as a probability, not a failed rejection
+d_parents <- sqrt(rowSums((epred[, i0, ] - epred[, j0, ])^2))
+p_less_than_parents <- mean(d_pair < d_parents)
+```
+
+## Y-tube choice
+
+Several Y-tube cells have small responder counts and choices that are close to unanimous, and the male design covers only DT6 and YT6. One-sided exact binomial tests behave poorly in exactly this regime. Boundary counts push estimates and interval endpoints to zero or one, and a string of separate exact tests across cells again invites an arbitrary correction decision. A Beta-Binomial with a uniform Beta(1,1) prior regularizes each proportion away from the hard boundaries, yields a coherent posterior even when counts are small or near-unanimous, and gives the attraction evidence we actually want to report as a single number, the posterior probability that the choice proportion exceeds one half.
+
+```r
+# Prior frequentist Y-tube test (reconstructed)
+
+# One-sided exact binomial test per cell, H1: preference > 0.5
+binom.test(pos_count, pos_count + neg_count,
+           p = 0.5, alternative = "greater")
+```
+
+```r
+# Bayesian Y-tube analysis (from bayesian_ytubes.R)
+
+# Beta(1,1) prior + binomial likelihood => analytic Beta posterior
+alpha_post <- pos_count + 1
+beta_post  <- neg_count + 1
+post_med   <- qbeta(0.50, alpha_post, beta_post)
+cri_lo     <- qbeta(0.025, alpha_post, beta_post)
+cri_hi     <- qbeta(0.975, alpha_post, beta_post)
+p_gt_half  <- pbeta(0.5, alpha_post, beta_post, lower.tail = FALSE)
+```
+
+## Antennal depolarization
+
+The depolarization data are repeated measurements taken from individual antennae across compounds, which is naturally a mixed model. The frequentist version fit this with restricted maximum likelihood and read off pairwise species contrasts within each compound from estimated marginal means. The Bayesian version keeps the same structure, with species, compound, their interaction, and plant as fixed effects and weevil identity as a random intercept, but partial pools across antennae and returns every species contrast as a posterior median difference with a credible interval and a probability of direction. This puts the EAD conclusions in the same units of evidence as the VOC and Y-tube conclusions, which is what lets the Results read consistently across all three streams.
+
+```r
+# Prior frequentist EAD model (reconstructed)
+
+m <- lmer(depol ~ species * compound + plant + (1 | weevil_id),
+          data = depol_long)
+emmeans(m, pairwise ~ species | compound)   # contrasts with p-values
+```
+
+```r
+# Bayesian EAD model (from EAD_bayes.R)
+
+fit_eag <- brm(depol ~ species * compound + plant + (1 | weevil_id),
+               data = depol_long, family = gaussian(),
+               prior = c(prior(normal(0, 5), class = b),
+                         prior(normal(0, 5), class = Intercept),
+                         prior(exponential(1), class = sd),
+                         prior(exponential(1), class = sigma)),
+               chains = 4, iter = 4000, warmup = 1000,
+               control = list(adapt_delta = 0.95),
+               seed = 42, backend = "cmdstanr")
+
+# Species contrast within each compound: median diff, 95% CrI, pd
+diff <- epred_eag[, i_j] - epred_eag[, i_jf]
+pd   <- max(mean(diff > 0), mean(diff < 0))
+```
+
+## A note on priors and on what the switch does not claim
+
+All priors are weakly informative, so the posteriors are driven by the data rather than by prior assumptions. We are not claiming that Bayesian inference is superior in general. The claim is narrower. The inferential targets of this study, which are the magnitude of hybrid displacement, the degree of convergence between ecotype and reciprocal-hybrid pairs, and the separation of location from dispersion in the volatile profiles, are estimation targets, and estimation under a single Bayesian framework expresses them more directly and more consistently than three separate testing procedures could.

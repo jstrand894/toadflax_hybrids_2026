@@ -1,0 +1,94 @@
+generated 2026-08-20 15:47:54.794478
+git sha fd0f4886e7d0908bcca9aca6c6dcc413fca705c4
+brms 2.23.0
+cmdstan 2.39.0
+n rows female 50
+seed 1
+--- fit_female (prior: normal(0,2)) ---
+ Family: binomial 
+  Links: mu = logit 
+Formula: pos_count | trials(total) ~ species * pos_trt + (1 | date) 
+   Data: df_female (Number of observations: 50) 
+  Draws: 4 chains, each with iter = 4000; warmup = 2000; thin = 1;
+         total post-warmup draws = 8000
+
+Multilevel Hyperparameters:
+~date (Number of levels: 34) 
+              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(Intercept)     0.16      0.12     0.01     0.45 1.00     2745     3222
+
+Regression Coefficients:
+                             Estimate Est.Error l-95% CI u-95% CI Rhat
+Intercept                        0.54      0.28    -0.00     1.10 1.00
+speciesjanthinus                 0.14      0.41    -0.65     0.92 1.00
+pos_trtDT6                       0.21      0.39    -0.55     0.97 1.00
+pos_trtY6D6                     -0.16      0.41    -0.98     0.66 1.00
+pos_trtD6Y6                     -0.00      0.40    -0.79     0.78 1.00
+pos_trtRAD                      -0.04      0.42    -0.85     0.78 1.00
+pos_trtHBR                       0.32      0.43    -0.52     1.17 1.00
+speciesjanthinus:pos_trtDT6     -0.91      0.56    -2.02     0.19 1.00
+speciesjanthinus:pos_trtY6D6    -0.59      0.59    -1.74     0.57 1.00
+speciesjanthinus:pos_trtD6Y6    -0.51      0.58    -1.65     0.61 1.00
+speciesjanthinus:pos_trtRAD     -0.44      0.58    -1.58     0.70 1.00
+speciesjanthinus:pos_trtHBR     -0.97      0.60    -2.16     0.21 1.00
+                             Bulk_ESS Tail_ESS
+Intercept                        2301     4130
+speciesjanthinus                 2039     3391
+pos_trtDT6                       3181     4750
+pos_trtY6D6                      3101     5087
+pos_trtD6Y6                      2876     4427
+pos_trtRAD                       3093     4767
+pos_trtHBR                       3403     4739
+speciesjanthinus:pos_trtDT6      2994     4787
+speciesjanthinus:pos_trtY6D6     2940     4674
+speciesjanthinus:pos_trtD6Y6     2687     4673
+speciesjanthinus:pos_trtRAD      2797     4690
+speciesjanthinus:pos_trtHBR      2925     4461
+
+Draws were sampled using sample(hmc). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
+--- fit_female_wide (prior: normal(0,5)) ---
+ Family: binomial 
+  Links: mu = logit 
+Formula: pos_count | trials(total) ~ species * pos_trt + (1 | date) 
+   Data: df_female (Number of observations: 50) 
+  Draws: 4 chains, each with iter = 4000; warmup = 2000; thin = 1;
+         total post-warmup draws = 8000
+
+Multilevel Hyperparameters:
+~date (Number of levels: 34) 
+              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(Intercept)     0.16      0.12     0.01     0.44 1.00     3114     3943
+
+Regression Coefficients:
+                             Estimate Est.Error l-95% CI u-95% CI Rhat
+Intercept                        0.47      0.31    -0.12     1.09 1.00
+speciesjanthinus                 0.30      0.47    -0.66     1.22 1.00
+pos_trtDT6                       0.30      0.43    -0.56     1.13 1.00
+pos_trtY6D6                     -0.07      0.45    -0.95     0.82 1.00
+pos_trtD6Y6                      0.08      0.43    -0.77     0.91 1.00
+pos_trtRAD                       0.04      0.45    -0.83     0.91 1.00
+pos_trtHBR                       0.43      0.46    -0.48     1.35 1.00
+speciesjanthinus:pos_trtDT6     -1.10      0.64    -2.34     0.18 1.00
+speciesjanthinus:pos_trtY6D6    -0.79      0.67    -2.09     0.53 1.00
+speciesjanthinus:pos_trtD6Y6    -0.70      0.65    -1.98     0.59 1.00
+speciesjanthinus:pos_trtRAD     -0.64      0.65    -1.92     0.66 1.00
+speciesjanthinus:pos_trtHBR     -1.19      0.67    -2.48     0.17 1.00
+                             Bulk_ESS Tail_ESS
+Intercept                        2121     3514
+speciesjanthinus                 2008     3317
+pos_trtDT6                       2685     3888
+pos_trtY6D6                      2712     3991
+pos_trtD6Y6                      2878     4370
+pos_trtRAD                       2598     4309
+pos_trtHBR                       3067     4156
+speciesjanthinus:pos_trtDT6      2555     3796
+speciesjanthinus:pos_trtY6D6     2472     3764
+speciesjanthinus:pos_trtD6Y6     2451     4202
+speciesjanthinus:pos_trtRAD      2428     3133
+speciesjanthinus:pos_trtHBR      2521     4176
+
+Draws were sampled using sample(hmc). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
